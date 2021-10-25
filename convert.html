@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<body>
+<form enctype="multipart/form-data">
+<input id="upload" type=file   accept=".suSave" name="files[]" size=30>
+</form>
+<p>
+Following States should be migrated:
+<ul>
+	<li>Assigned/finished Classes</li>
+	<li>Assigned/finished Majors</li>
+	<li>Current Partners and Clubs</li>
+</ul>
+</p>
+<p>
+Following States will/can not be migrated:
+<ul>
+	<li>Punnishments</li>
+	<li>Credits are different in PU. They will be recalculated</li>
+	<li>The Roulette</li>
+	<li>Anything currently in progress</li>
+</ul>
+</p>
+<script>
+https://stackoverflow.com/a/24898081
+function download_txt(textToSave,name) {
+  var hiddenElement = document.createElement('a');
+
+  hiddenElement.href = 'data:attachment/text,' + encodeURI(textToSave);
+  hiddenElement.target = '_blank';
+  hiddenElement.download = name;
+  hiddenElement.click();
+}
+
+function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+    // use the 1st file from the list
+    f = files[0];
+    
+    var reader = new FileReader();
+
+    // Closure to capture the file information.
+    reader.onload = (function(theFile) {
+        return function(e) {
+	  var data = e.target.result;
+	  var output = {};
+	  output.assignedClasses = []; 
+	  data = JSON.parse(data);
+	  console.log(data);
+	  for(var key in data){
+	    switch (key){
+	      case "currentClasses":
+		 var classes = data[key];
+		 var mapping = {"101": "322","102":"120","103":"36","104":"76","105":"395","106":"550","107":"620","108":"494","118":"471","201":"313","203":"27","204":"67","207":"609","209":"521","211":"156","212":"138","213":"202","214":"575","215":"405","216":"369","217":"435","218":"461","220":"347","301":"303","302":"111","303":"17","304":"56","305":"386","306":"543","307":"602","308":"487","309":"512","311":"148","312":"129","313":"191","314":"564","316":"364","317":"426","318":"450","320":"338","401":"291","402":"102","403":"8","404":"45","405":"528","406":"537","407":"593","408":"480","409":"501","413":"179","414":"552","415":"372","416":"356","417":"417","418":"441","420":"329"};
+		 classes = classes.split("\"");
+		 for(var c=0;c< classes.length;c++){
+		   if(!isNaN(classes[c])){
+	             output.assignedClasses.push({'id': mapping[classes[c]], 'status': 'active'});
+                   }
+		 }
+                 break;
+	      case "completedClasses":
+		 var classes = data[key];
+		 var mapping = {"101": "322","102":"120","103":"36","104":"76","105":"395","106":"550","107":"620","108":"494","118":"471","201":"313","203":"27","204":"67","207":"609","209":"521","211":"156","212":"138","213":"202","214":"575","215":"405","216":"369","217":"435","218":"461","220":"347","301":"303","302":"111","303":"17","304":"56","305":"386","306":"543","307":"602","308":"487","309":"512","311":"148","312":"129","313":"191","314":"564","316":"364","317":"426","318":"450","320":"338","401":"291","402":"102","403":"8","404":"45","405":"528","406":"537","407":"593","408":"480","409":"501","413":"179","414":"552","415":"372","416":"356","417":"417","418":"441","420":"329"};
+		 classes = classes.split("\"");
+		 for(var c=0;c< classes.length;c++){
+		   if(!isNaN(classes[c])){
+	             output.assignedClasses.push({'id': mapping[classes[c]], 'status': 'finished',"attendances":6});
+                   }
+		 }
+                 break;
+	      case "activePartners":
+		 var partners = data[key];
+		 var mapping = ["","88","830","833","836","839","842","845","848","870"];
+		 output.assignedPartners = []; 
+		 partners = partners.split("\"");
+		 for(var p=0;p< partners.length;p++){
+		   if(!isNaN(partners[p])){
+	             output.assignedPartners.push({'id': mapping[partners[p]], "activePerks":{}});
+                   }
+		 }
+                 break;
+	      case "activeClubs":
+		 var mapping = {"5":"90","1":"766","2":"769","3":"771","4":"773","6":"777","7":"780","8":"783","18":"810","19":"812","20":"815","22":"821","23":"824","9":"785","11":"790","12":"793","13":"796","14":"799","15":"801","16":"804","17":"807","21":"818","24":"827"};
+		 var clubs = data[key];
+		 output.assignedClubs = []; 
+		 clubs = clubs.split("\"");
+		 for(var c=0;c< clubs.length;c++){
+		   if(!isNaN(clubs[c])){
+	             output.assignedClubs.push({'id': mapping[clubs[c]]});
+                   }
+		 }
+                 break;
+//	      case "currentPunishments":
+//		 var punish = data[key];
+//		 output.assignedPunishments = []; 
+//		 punish  = punish.split("\"");
+//		 for(var p=0;p< punish.length;p++){
+//		   if(!isNaN(punish[p])){
+//	             output.assignedPunishments.push(punish[p]);
+//                 }
+//		 }
+//               break;
+	      case "completedMajors":
+		 var majors = data[key];
+		 var mapping = ["","93","0","164","211","224","231","240","248","255","262","270","281"];
+		 output.finishedMajors = []; 
+		 majors  = majors.split("\"");
+		 for(var p=0;p< majors.length;p++){
+		   if(!isNaN(majors[p])){
+	             output.finishedMajors.push(mapping[majors[p]]);
+                   }
+		 }
+                 break;
+
+	    }
+	  }
+	  var mapping = ["","93","0","164","211","224","231","240","248","255","262","270","281"];
+	  output.activeMajor = mapping[data["currentMajor"].replace(/\"/g,"")];
+	  output = {'saveGame': output, 'mapId': "9c5ed6cb-3d08-42f7-9f18-87ec4eab1ce6"};
+	  console.log(output);
+          download_txt(JSON.stringify(output),f.name.replace(".suSave",".puSave"));
+        };
+      })(f);
+
+      // Read in the image file as a data URL.
+      reader.readAsText(f);
+  }
+
+  document.getElementById('upload').addEventListener('change', handleFileSelect, false);
+</script>
+</body>
+</html>
+
